@@ -162,11 +162,7 @@ The client implementations shall connect to a telemetry server via a WebSocket t
 The client is only required to send fields which it wants to share. The first payload upladed after starting the client should include basic identification data (ie. `name`, `peer_id`, `client`, `version` `capability`). The subsequent payloads may only include `Network`-related fields. The telemetry server will use the unique websocket ID to match incoming payload records to respective Peer_ID.
 
 
-- Example websocket data feed
-
-(TBA)
-
-
+- See [here](#payload-format) for an example websocket data feed
 
 ### REST API:
 
@@ -272,7 +268,7 @@ impl TelemetryHandle {
 }
 ```
 
-### Data Format
+### Payload Format
 
 The client communicates with the backend using the following data format for each session:
 
