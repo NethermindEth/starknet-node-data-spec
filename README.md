@@ -74,3 +74,141 @@ Method: `GET`
   }
 }
 ```
+
+# Telemetry Service Documentation
+
+## Overview
+
+The telemetry service of Starknet is largely inspired by the telemetry service of [Substrate](https://github.com/paritytech/substrate-telemetry). The process is quite straightforward and aims to monitor and communicate various metrics and events from the nodes.
+
+## Client-side Implementation
+
+On the client side, we have a dynamic payload system that sends data over a WebSocket session. This allows the client to send a set of data or overwrite existing data for a defined session. The implementation in Rust looks like this:
+
+### Telemetry Service
+
+The `TelemetryService` structure is defined as follows:
+
+```rust
+pub struct TelemetryService {
+    no_telemetry: bool,
+    telemetry_endpoints: Vec<(String, u8)>,
+    telemetry_handle: TelemetryHandle,
+    start_state: Option<mpsc::Receiver<TelemetryEvent>>,
+}
+```
+
+### Telemetry Events
+
+This service will send `TelemetryEvent`s as follow:
+
+```rust
+#[derive(Debug)]
+pub struct TelemetryEvent {
+    verbosity: VerbosityLevel,
+    message: serde_json::Value,
+}
+```
+
+### Telemetry Handle
+
+Throught a `TelemetryHandle` defined as follow:
+
+```rust
+#[derive(Debug, Clone)]
+pub struct TelemetryHandle(Option<Arc<mpsc::Sender<TelemetryEvent>>>);
+
+impl TelemetryHandle {
+    pub fn send(&self, verbosity: VerbosityLevel, message: serde_json::Value) {
+        if message.get("msg").is_none() {
+            log::warn!("Telemetry messages should have a message type");
+        }
+        if let Some(tx) = &self.0 {
+            // Drop the message if the channel is full.
+            let _ = tx.try_send(TelemetryEvent { verbosity, message });
+        }
+    }
+}
+```
+
+### Data Format
+
+The client communicates with the backend using the following data format for each session:
+
+```json
+{
+  "Headers": {
+    "connection": "upgrade",
+    "upgrade": "websocket",
+    "sec-websocket-key": "BAEH5i294qAwsXDO2ZirPw==",
+    "sec-websocket-version": "13",
+    "accept": "*/*",
+    "host": "localhost:8080"
+  },
+  "messages": [
+    {
+      "payload": {
+        "name": "Starknode",
+        "peer_id": "12D3KooWMo65MdEXUembrdnYTdw588mREZmQrebkmJwpPbkGbony",
+        "client": "Madara",
+        "version": "0.1.0-8bf85f6dc0b",
+        "capability": "Full",
+        "network": "Starknet",
+        "starknet_version": "0.13.2",
+        "json_rpc_version": "0.7.1",
+        "operating_system": "MacOs",
+        "memory": 16,
+        "cpu": 8,
+        "storage": 1092
+      },
+      "ts": "2024-07-11T11:46:08.602688201+00:00"
+    },
+    {
+      "payload": {
+        "current_block_hash_l2": "0x47c3637b57c2b079b93c61539950c17e868a28f46cdef28f88521067f21e943",
+        "current_block_number_l2": 0,
+        "latest_block_time": 320000,
+        "avg_sync_time": 382,
+        "estimate_sync": 4.5,
+        "tx_number": 245,
+        "event_number": 1890,
+        "message_number": 3,
+        "peer_count": 43,
+        "node_uptime": 2.3
+      },
+      "ts": "2024-07-11T11:46:08.996351122+00:00"
+    },
+    {
+      "payload": {
+        "current_block_hash_l2": "0x7aefb91c8e2d3a47abcfb5bda9c127a3ea9b1f94b5a6e761b4182e3f01d2f5d4",
+        "current_block_number_l2": 1,
+        "latest_block_time": 330000,
+        "avg_sync_time": 410,
+        "estimate_sync": 5.2,
+        "tx_number": 300,
+        "event_number": 2025,
+        "message_number": 5,
+        "peer_count": 48
+      },
+      "ts": "2024-07-12T09:23:11.123456789+00:00"
+    },
+    {
+      "payload": {
+        "current_block_hash_l1": "0x1f9090aae28b8a3dceadf281b0f12828e676c326",
+        "current_block_number_l1": 20289357
+      },
+      "ts": "2024-07-11T11:46:09.035827447+00:00"
+    },
+    {
+      "payload": {
+        "memory_usage": 4.4,
+        "cpu_usage": 3,
+        "storage_usage": 245
+      },
+      "ts": "2024-07-11T11:46:09.035827447+00:00"
+    }
+  ]
+}
+```
+
+As you can see here it doesn't matter what data you send when, if it matches our back/front end then it will be displayed in the right place for the current session.
