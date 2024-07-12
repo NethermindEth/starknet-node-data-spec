@@ -132,6 +132,10 @@ The client implementations shall connect to a telemetry server via a WebSocket t
                     "description": "Expressed in %"
                 },
                 "CPU": {
+                    "type": "integer",
+                    "description": "Number of cores"
+                },
+                "CPU_type": {
                     "type": "string"
                 },
                 "CPU_usage": {
