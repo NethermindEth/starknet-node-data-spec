@@ -32,7 +32,7 @@ The diagram below illustrates the interaction between nodes, crawlers, telemetry
 The client implementations shall connect to a telemetry server via a WebSocket to stream telemetry data as a continuous stream. 
 
 - The Clent will allow to specify the telemetry endpoint URL, which will be used to upload telementry data. 
-- Clients are expected to follow the JSON data structure as payload in subsequent data updates:
+- Clients are expected to follow the JSON data structure as `payload` structures in subsequent data updates:
 
 ```json
 
