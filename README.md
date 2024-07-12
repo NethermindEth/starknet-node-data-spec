@@ -154,6 +154,10 @@ The client implementations shall connect to a telemetry server via a WebSocket t
 
 ```
 
+**NOTE:** the fields in the schema are marked as NOT required, ie. it is possible to upload partial data for subsequent events. 
+The client is only required to send fields which it wants to share. The first payload upladed after starting the client should include basic identification data (ie. `name`, `peer_id`, `client`, `version` `capability`). The subsequent payloads may only include `Network`-related fields. The telemetry server will use the unique websocket ID to match incoming payload records to respective Peer_ID.
+
+
 - Example websocket data feed
 
 (TBA)
